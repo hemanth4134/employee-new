@@ -1,0 +1,5 @@
+dockerfile.y<S3Album
+    level=
+    path={path}
+    filter={(item) => /jpg/i.test(item.path)}
+/>

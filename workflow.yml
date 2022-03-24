@@ -1,0 +1,45 @@
+name : Java CI with CodeGuru Reviewer
+
+on: 
+  push:
+    branches: [main] 
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Configure Aws Credentials
+      uses: aws-actions/Configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{Secerets.Aws_Access_key_Id}}
+        aws-seceret-access-key: ${{secerets.Aws_Secerets_Access_key}} # if you have/need it
+        aws-region: us-east-2
+
+    - name: Set up Jdk
+      uses: actions/setup-Java@v1
+      with:
+          java-version: 1.8
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: CodeGuru Reviewer
+      uses: aws-actions/codeguru-reviewer@v1.1
+      with:
+        build_path: target # build artifacts (s) directory
+        s3_bucket: codeguru-reviewer-git-cicd # S3 Bucket with "codeguru-reviewer-*" prefix
+                      
+    - name: Upload review result
+      if: ${{ github.event_name != 'push' }}
+      uses: github/codeql-action/upload-sarif@v1
+      with: 
+        sarif-file: codeguru-results.sarif.json                          
+
+       
